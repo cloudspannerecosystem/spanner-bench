@@ -1,0 +1,16 @@
+database: "projects/computelabs/instances/hello/databases/db"
+queries:
+    - name: "Benchmark1"
+      sql: "select * from tweets"
+      optimizers:
+        - "1"
+        - "2"
+    - name: "Benchmark2"
+      sql: "select * from tweets where likes > 5000 limit 100"
+      optimizers:
+        - "1"
+        - "2"
+    - name: "Benchmark3"
+      sql: "select * from tweets where likes > 1 limit 100"
+      optimizers:
+        - "2"
