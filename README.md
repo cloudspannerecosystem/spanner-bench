@@ -37,12 +37,14 @@ Benchmark3
 
 ## Notes
 
-* spanner-query-benchmark runs the query planner and the query to
+* The tool runs the query planner and the query to
   display query execution stats.
 * The "scanned rows" is the most useful metric, others might be
   noisy and inconsistent.
-* It currently doesn't support timestamp-bound queries but it's in
-  the roadmap. 
+* The tool currently doesn't support timestamp-bound queries but it's in
+  the roadmap.
+* The tool currently doesn't allow to use a specified index when
+  querying. It will be enabled if requested by the users.
 
 ## Disclaimer
 
