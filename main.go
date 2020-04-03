@@ -158,6 +158,18 @@ func (b *benchmarks) query(v string, stmt spanner.Statement) (benchmarkResult, e
 	return result, nil
 }
 
+func (b *benchmarks) print(q Query, r ...benchmarkResult) {
+	// Print the header.
+	fmt.Printf("   %10s %10s %10s %10s \n", "(scanned)", "(total)", "(cpu)", "(plan)")
+	for i, result := range r {
+		fmt.Println(result)
+		if i > 0 {
+			// TODO(jbd): Compare with the previous.
+			// fmt.Println(result.Diff(r[i-1]))
+		}
+	}
+}
+
 func parseInt64(v string) int64 {
 	parsed, _ := strconv.ParseInt(v, 10, 64)
 	return parsed
@@ -172,18 +184,6 @@ func parseDuration(v string) time.Duration {
 	return dur
 }
 
-func (b *benchmarks) print(q Query, r ...benchmarkResult) {
-	// Print the header.
-	fmt.Printf("   %10s %10s %10s \n", "(total)", "(cpu)", "(plan)")
-	for i, result := range r {
-		fmt.Println(result)
-		if i > 0 {
-			// Compare with the previous.
-			fmt.Println(result.Diff(r[i-1]))
-		}
-	}
-}
-
 type benchmarkResult struct {
 	Optimizer     string
 	ElapsedTime   time.Duration
@@ -196,6 +196,7 @@ type benchmarkResult struct {
 func (b benchmarkResult) String() string {
 	buf := &strings.Builder{}
 	fmt.Fprintf(buf, "%s: ", b.Optimizer)
+	fmt.Fprintf(buf, "%10d ", b.RowsScanned)
 	fmt.Fprintf(buf, "%10s ", b.ElapsedTime)
 	fmt.Fprintf(buf, "%10s ", b.CPUTime)
 	fmt.Fprintf(buf, "%10s    ", b.QueryPlanTime)
@@ -205,27 +206,29 @@ func (b benchmarkResult) String() string {
 
 func (b benchmarkResult) Diff(prev benchmarkResult) string {
 	buf := &strings.Builder{}
+
+	diffScanned := float64(prev.RowsScanned-b.RowsScanned) / float64(prev.RowsScanned) * -100
 	diffElapsed := float64(prev.ElapsedTime-b.ElapsedTime) / float64(prev.ElapsedTime) * -100
 	diffCPU := float64(prev.CPUTime-b.CPUTime) / float64(prev.CPUTime) * -100
 	diffQuery := float64(prev.QueryPlanTime-b.QueryPlanTime) / float64(prev.QueryPlanTime) * -100
 
-	fmt.Fprintf(buf, "  %s", formatPercentage(diffElapsed))
-	fmt.Fprintf(buf, "  %s", formatPercentage(diffCPU))
-	fmt.Fprintf(buf, "  %s", formatPercentage(diffQuery))
+	fmt.Fprintf(buf, "%s ", formatPercentage(diffScanned))
+	fmt.Fprintf(buf, "%s ", formatPercentage(diffElapsed))
+	fmt.Fprintf(buf, "%s ", formatPercentage(diffCPU))
+	fmt.Fprintf(buf, "%s", formatPercentage(diffQuery))
 	return buf.String()
 }
 
 func formatPercentage(v float64) string {
-	const col = 10
 	txt := fmt.Sprintf("%2.2f", v) + "%"
 	if v == 0 {
-		return pad(txt, 10)
+		return txt
 	}
 	if v > 0 {
 		txt = "+" + txt
-		return color.RedString(pad(txt, 10))
+		return color.RedString(txt)
 	}
-	return color.GreenString(pad(txt, 10))
+	return color.GreenString(txt)
 }
 
 func pad(v string, col int) string {
