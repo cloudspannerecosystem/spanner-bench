@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -34,6 +35,7 @@ func main() {
 	ctx := context.Background()
 	flag.StringVar(&config, "f", "benchmark.yaml", "")
 	flag.IntVar(&n, "n", 20, "")
+	flag.Usage = printUsage
 	flag.Parse()
 
 	data, err := ioutil.ReadFile(config)
@@ -58,3 +60,13 @@ func main() {
 	}
 	b.start()
 }
+
+func printUsage() {
+	fmt.Println(usageText)
+}
+
+const usageText = `spanner-query-benchmark [options...]
+
+Options:
+-f   Config file to read from, by default "benchmark.yaml". 
+-n   Number of times to run a query, by default 20.`
