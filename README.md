@@ -35,6 +35,15 @@ Benchmark3
 |-|-|-|-|-|-|
 | 1: | 965  | 38.187ms | 3.015ms | 798.5µs | 965/965 |
 
+## Notes
+
+* spanner-query-benchmark runs the query planner and the query to
+  display query execution stats.
+* The "scanned rows" is the most useful metric, others would be
+  noisy and inconsistent.
+* It currently doesn't support timestamp-bound queries but it's in
+  the roadmap. 
+
 ## Disclaimer
 
 This is not an official Google product.
