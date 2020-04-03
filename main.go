@@ -22,8 +22,11 @@ import (
 	"log"
 
 	"cloud.google.com/go/spanner"
+	"google.golang.org/api/option"
 	"gopkg.in/yaml.v2"
 )
+
+const userAgent = "spanner-query-benchmark/0.1"
 
 var (
 	config string
@@ -48,7 +51,7 @@ func main() {
 		log.Fatalf("Cannot parse the config file: %v", err)
 	}
 
-	client, err := spanner.NewClient(ctx, c.Database)
+	client, err := spanner.NewClient(ctx, c.Database, option.WithUserAgent(userAgent))
 	if err != nil {
 		log.Fatalf("Cannot create Spanner client: %v", err)
 	}
