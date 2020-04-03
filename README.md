@@ -29,6 +29,12 @@ Benchmark3
 2:        100  36.5565ms   1.7675ms   1.2715ms    100/100
 ```
 
+### Output explained...
+
+| planner version | total rows scanned | total execution time | total CPU time | planning time | rows scanned/rows returned |
+|-|-|-|-|-|-|
+| 1: | 965  | 38.187ms | 3.015ms | 798.5µs | 965/965 |
+
 ---
 
 ## Disclaimer
