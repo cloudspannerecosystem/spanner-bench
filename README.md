@@ -4,7 +4,7 @@ A Google Cloud Spanner query planner benchmarking tool.
 It also allows you to run the same benchmark against
 multiple versions of the query planner.
 
-See `benchmark.yaml` for an example configuration.
+See `examples/benchmark.yaml` for an example configuration.
 
 ## Installation
 
