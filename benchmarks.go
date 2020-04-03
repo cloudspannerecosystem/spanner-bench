@@ -70,7 +70,7 @@ func (b *benchmarks) queryN(v string, stmt spanner.Statement) benchmarkResult {
 	// TODO(jbd): Use the 50th percentile instead.
 	return benchmarkResult{
 		Optimizer:     v,
-		RowsScanned:   total.RowsReturned / int64(i),
+		RowsScanned:   total.RowsScanned / int64(i),
 		RowsReturned:  total.RowsReturned / int64(i),
 		QueryPlanTime: total.QueryPlanTime / time.Duration(i),
 		CPUTime:       total.CPUTime / time.Duration(i),
