@@ -35,8 +35,6 @@ Benchmark3
 |-|-|-|-|-|-|
 | 1: | 965  | 38.187ms | 3.015ms | 798.5µs | 965/965 |
 
----
-
 ## Disclaimer
 
 This is not an official Google product.
