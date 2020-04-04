@@ -129,7 +129,7 @@ func (b *benchmarks) print(q Query, r ...benchmarkResult) {
 		fmt.Println(result)
 		if i > 0 {
 			// TODO(jbd): Compare with the previous.
-			// fmt.Println(result.Diff(r[i-1]))
+			fmt.Println(result.Diff(r[i-1]))
 		}
 	}
 }

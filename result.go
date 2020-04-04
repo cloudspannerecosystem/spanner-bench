@@ -58,17 +58,14 @@ func (b benchmarkResult) String() string {
 }
 
 func (b benchmarkResult) Diff(prev benchmarkResult) string {
-	buf := &strings.Builder{}
-
 	diffScanned := float64(prev.RowsScanned-b.RowsScanned) / float64(prev.RowsScanned) * -100
-	fmt.Fprintf(buf, "%s ", formatPercentage(diffScanned))
-	return buf.String()
+	return fmt.Sprintf("   %10s ", formatPercentage(diffScanned))
 }
 
 func formatPercentage(v float64) string {
 	txt := fmt.Sprintf("%2.2f", v) + "%"
-	if v == 0 {
-		return txt
+	if strings.Contains(txt, "0.00") {
+		return "0.00%"
 	}
 	if v > 0 {
 		txt = "+" + txt
