@@ -50,9 +50,7 @@ func (b *benchmarks) run(q Query) {
 
 func (b *benchmarks) queryN(v string, stmt spanner.Statement) benchmarkResult {
 	var i int
-
-	var rowsScanned, rowsReturned []int64
-	var cpuTime, queryPlanTime, elapsedTime []int64
+	var rowsScanned, rowsReturned, cpuTime, queryPlanTime, elapsedTime []int64
 
 	for {
 		if i == b.n {
