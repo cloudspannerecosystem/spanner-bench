@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/spanner"
+	"github.com/rakyll/spanner-query-benchmark/internal/stats"
 	"google.golang.org/api/iterator"
 	sppb "google.golang.org/genproto/googleapis/spanner/v1"
 )
@@ -50,7 +51,9 @@ func (b *benchmarks) run(q Query) {
 func (b *benchmarks) queryN(v string, stmt spanner.Statement) benchmarkResult {
 	var i int
 
-	var total benchmarkResult
+	var rowsScanned, rowsReturned []int64
+	var cpuTime, queryPlanTime, elapsedTime []int64
+
 	for {
 		if i == b.n {
 			break
@@ -60,21 +63,20 @@ func (b *benchmarks) queryN(v string, stmt spanner.Statement) benchmarkResult {
 			// TODO(jbd): Error if too many retries.
 			continue
 		}
-		total.RowsScanned += result.RowsScanned
-		total.RowsReturned += result.RowsReturned
-		total.CPUTime += result.CPUTime
-		total.QueryPlanTime += result.QueryPlanTime
-		total.ElapsedTime += result.ElapsedTime
+		rowsScanned = append(rowsScanned, result.RowsScanned)
+		rowsReturned = append(rowsReturned, result.RowsReturned)
+		cpuTime = append(cpuTime, int64(result.CPUTime))
+		queryPlanTime = append(queryPlanTime, int64(result.QueryPlanTime))
+		elapsedTime = append(elapsedTime, int64(result.ElapsedTime))
 		i++
 	}
-	// TODO(jbd): Use the 50th percentile instead.
 	return benchmarkResult{
 		Optimizer:     v,
-		RowsScanned:   total.RowsScanned / int64(i),
-		RowsReturned:  total.RowsReturned / int64(i),
-		QueryPlanTime: total.QueryPlanTime / time.Duration(i),
-		CPUTime:       total.CPUTime / time.Duration(i),
-		ElapsedTime:   total.ElapsedTime / time.Duration(i),
+		RowsScanned:   stats.MedianInt64(rowsScanned...),
+		RowsReturned:  stats.MedianInt64(rowsReturned...),
+		CPUTime:       time.Duration(stats.MedianInt64(cpuTime...)),
+		QueryPlanTime: time.Duration(stats.MedianInt64(queryPlanTime...)),
+		ElapsedTime:   time.Duration(stats.MedianInt64(elapsedTime...)),
 	}
 }
 
@@ -87,6 +89,7 @@ func (b *benchmarks) query(v string, stmt spanner.Statement) (benchmarkResult, e
 		},
 	})
 	defer it.Stop()
+
 	for {
 		_, err := it.Next()
 		if err == iterator.Done {

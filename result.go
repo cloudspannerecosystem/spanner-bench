@@ -61,14 +61,7 @@ func (b benchmarkResult) Diff(prev benchmarkResult) string {
 	buf := &strings.Builder{}
 
 	diffScanned := float64(prev.RowsScanned-b.RowsScanned) / float64(prev.RowsScanned) * -100
-	diffElapsed := float64(prev.ElapsedTime-b.ElapsedTime) / float64(prev.ElapsedTime) * -100
-	diffCPU := float64(prev.CPUTime-b.CPUTime) / float64(prev.CPUTime) * -100
-	diffQuery := float64(prev.QueryPlanTime-b.QueryPlanTime) / float64(prev.QueryPlanTime) * -100
-
 	fmt.Fprintf(buf, "%s ", formatPercentage(diffScanned))
-	fmt.Fprintf(buf, "%s ", formatPercentage(diffElapsed))
-	fmt.Fprintf(buf, "%s ", formatPercentage(diffCPU))
-	fmt.Fprintf(buf, "%s", formatPercentage(diffQuery))
 	return buf.String()
 }
 

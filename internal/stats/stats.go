@@ -32,7 +32,7 @@ func MedianInt64(x ...int64) int64 {
 	})
 
 	if count%2 == 0 {
-		return MedianInt64(x[count/2-1 : count/2+1]...)
+		return x[count/2-1]
 	}
 	return x[count/2]
 }
@@ -48,7 +48,7 @@ func MedianFloat64(x ...float64) float64 {
 	sort.Float64s(copied)
 
 	if count%2 == 0 {
-		return MedianFloat64(x[count/2-1 : count/2+1]...)
+		return x[count/2-1]
 	}
 	return x[count/2]
 }
