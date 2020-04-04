@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"cloud.google.com/go/spanner"
@@ -49,17 +50,21 @@ func (b *benchmarks) run(q Query) {
 }
 
 func (b *benchmarks) queryN(v string, stmt spanner.Statement) benchmarkResult {
-	var i int
+	var i, retries int
 	var rowsScanned, rowsReturned, cpuTime, queryPlanTime, elapsedTime []int64
 
 	for {
 		if i == b.n {
 			break
 		}
+
 		result, err := b.query(v, stmt)
+		retries++
 		if err != nil {
-			// TODO(jbd): Error if too many retries.
 			continue
+		}
+		if retries > 2*b.n {
+			log.Fatalf("Query failed too many times: %v\n", err)
 		}
 		rowsScanned = append(rowsScanned, result.RowsScanned)
 		rowsReturned = append(rowsReturned, result.RowsReturned)
