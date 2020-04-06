@@ -6,11 +6,11 @@ multiple versions of the query planner.
 
 See `examples/benchmark.yaml` for an example configuration.
 
-## Installation
+## Downloads
 
-```
-$ go get -u github.com/rakyll/spanner-query-benchmark
-```
+* [Linux 64-bit](https://github.com/rakyll/spanner-query-benchmark/raw/master/bin/spanner-query-benchmark_linux_amd64)
+* [MacOS 64-bit](https://github.com/rakyll/spanner-query-benchmark/raw/master/bin/spanner-query-benchmark_darwin_amd64)
+* [Windows 64-bit](https://github.com/rakyll/spanner-query-benchmark/raw/master/bin/spanner-query-benchmark_windows_amd64)
 
 ## Usage
 
