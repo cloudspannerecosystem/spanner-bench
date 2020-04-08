@@ -1,16 +1,25 @@
 database: "projects/YOUR_PROJECT_NAME/instances/YOUR_SPANNER_INSTANCE/databases/YOUR_SPANNER_DB"
 queries:
     - name: "Benchmark1"
-      sql: "select * from tweets"
+      sql: "SELECT ProductId, MAX(Version) AS Version
+            FROM Products
+            WHERE ProductKind = 1
+            GROUP BY ProductKind, ProductId"
       optimizers:
         - "1"
         - "2"
     - name: "Benchmark2"
-      sql: "select * from tweets where likes > 5000 limit 100"
+      sql: "SELECT ProductId, MAX(Version) AS Version
+            FROM Products
+            WHERE ProductKind = 1
+            GROUP BY ProductId"
       optimizers:
         - "1"
         - "2"
     - name: "Benchmark3"
-      sql: "select * from tweets where likes > 1 limit 100"
+      sql: "SELECT ProductKind, ProductId, MAX(Version) AS Version
+            FROM Products 
+            WHERE ProductKind = 1
+            GROUP BY ProductKind, ProductId"
       optimizers:
         - "2"
