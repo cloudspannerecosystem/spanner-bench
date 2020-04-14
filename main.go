@@ -68,7 +68,7 @@ func printUsage() {
 	fmt.Println(usageText)
 }
 
-const usageText = `spanner-query-benchmark [options...]
+const usageText = `spannerbench [options...]
 
 Options:
 -f   Config file to read from, by default "benchmark.yaml". 

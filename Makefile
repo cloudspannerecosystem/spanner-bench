@@ -1,4 +1,4 @@
-binary = spanner-query-benchmark
+binary = spannerbench
 
 build:
   GOOS=windows GOARCH=amd64 go build -o ./bin/$(binary)_windows_amd64
