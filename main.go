@@ -26,7 +26,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const userAgent = "spanner-query-benchmark/0.1"
+const userAgent = "spannerbench/0.1"
 
 var (
 	config string

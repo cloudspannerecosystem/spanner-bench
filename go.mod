@@ -1,4 +1,4 @@
-module github.com/rakyll/spanner-query-benchmark
+module github.com/rakyll/spannerbench
 
 go 1.14
 

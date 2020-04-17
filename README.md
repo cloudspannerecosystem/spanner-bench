@@ -1,4 +1,4 @@
-# spanner-query-benchmark
+# spannerbench
 
 A Google Cloud Spanner query planner benchmarking tool.
 It also allows you to run the same benchmark against
@@ -8,14 +8,14 @@ See `examples/benchmark.yaml` for an example configuration.
 
 ## Downloads
 
-* [Linux 64-bit](https://github.com/rakyll/spanner-query-benchmark/raw/master/bin/spanner-query-benchmark_linux_amd64)
-* [MacOS 64-bit](https://github.com/rakyll/spanner-query-benchmark/raw/master/bin/spanner-query-benchmark_darwin_amd64)
-* [Windows 64-bit](https://github.com/rakyll/spanner-query-benchmark/raw/master/bin/spanner-query-benchmark_windows_amd64)
+* [Linux 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_linux_amd64)
+* [MacOS 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_darwin_amd64)
+* [Windows 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_windows_amd64)
 
 ## Usage
 
 ```
-$ spanner-query-benchmark
+$ spannerbench
 Benchmark1
     (scanned)    (total)      (cpu)     (plan)
 1:        965  37.7455ms   2.7275ms    812.5µs    965/965
