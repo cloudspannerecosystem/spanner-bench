@@ -15,12 +15,16 @@
 package main
 
 type Config struct {
-	Database string  `yaml:"database"`
-	Queries  []Query `yaml:"queries"`
+	Database   string      `yaml:"database"`
+	Benchmarks []Benchmark `yaml:"benchmarks"`
 }
 
-type Query struct {
-	Name       string   `yaml:"name"`
-	SQL        string   `yaml:"sql"`
-	Optimizers []string `yaml:"optimizers"`
+// TODO(jbd): Add query stats.
+
+type Benchmark struct {
+	Name      string `yaml:"name"`
+	SQL       string `yaml:"sql"`
+	Optimizer string `yaml:"optimizer"` // optimizer version
+	ReadOnly  bool   `yaml:"readonly"`
+	// TODO(jbd): Add staleness options.
 }

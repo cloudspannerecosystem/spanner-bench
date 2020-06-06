@@ -32,13 +32,16 @@ var (
 	config string
 	n      int // number of iterations for each
 	// TODO(jbd): Allow concurrent runs.
+	// Configure session management based on concurrency.
 )
 
 func main() {
 	ctx := context.Background()
 	flag.StringVar(&config, "f", "benchmark.yaml", "")
-	flag.IntVar(&n, "n", 20, "")
-	flag.Usage = printUsage
+	flag.IntVar(&n, "n", 50, "")
+	flag.Usage = func() {
+		fmt.Println(usageText)
+	}
 	flag.Parse()
 
 	data, err := ioutil.ReadFile(config)
@@ -57,15 +60,11 @@ func main() {
 	}
 
 	b := benchmarks{
-		client:  client,
-		n:       n,
-		queries: c.Queries,
+		client:     client,
+		n:          n,
+		benchmarks: c.Benchmarks,
 	}
 	b.start()
-}
-
-func printUsage() {
-	fmt.Println(usageText)
 }
 
 const usageText = `spannerbench [options...]

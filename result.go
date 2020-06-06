@@ -19,8 +19,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/fatih/color"
 )
 
 func parseInt64(v string) int64 {
@@ -38,45 +36,11 @@ func parseDuration(v string) time.Duration {
 }
 
 type benchmarkResult struct {
-	Optimizer     string
-	ElapsedTime   time.Duration
-	CPUTime       time.Duration
-	QueryPlanTime time.Duration
-	RowsScanned   int64
-	RowsReturned  int64
+	Elapsed time.Duration
 }
 
 func (b benchmarkResult) String() string {
 	buf := &strings.Builder{}
-	fmt.Fprintf(buf, "%s: ", b.Optimizer)
-	fmt.Fprintf(buf, "%10d ", b.RowsScanned)
-	fmt.Fprintf(buf, "%10s ", b.ElapsedTime)
-	fmt.Fprintf(buf, "%10s ", b.CPUTime)
-	fmt.Fprintf(buf, "%10s    ", b.QueryPlanTime)
-	fmt.Fprintf(buf, "%d/%d", b.RowsScanned, b.RowsReturned)
+	fmt.Fprintf(buf, "%10s ", b.Elapsed)
 	return buf.String()
-}
-
-func (b benchmarkResult) Diff(prev benchmarkResult) string {
-	diffScanned := float64(prev.RowsScanned-b.RowsScanned) / float64(prev.RowsScanned) * -100
-	return fmt.Sprintf("   %10s ", formatPercentage(diffScanned))
-}
-
-func formatPercentage(v float64) string {
-	txt := fmt.Sprintf("%2.2f", v) + "%"
-	if strings.Contains(txt, "0.00") {
-		return "0.00%"
-	}
-	if v > 0 {
-		txt = "+" + txt
-		return color.RedString(txt)
-	}
-	return color.GreenString(txt)
-}
-
-func pad(v string, col int) string {
-	if len(v) >= col {
-		return v
-	}
-	return strings.Repeat(" ", col-len(v)) + v
 }

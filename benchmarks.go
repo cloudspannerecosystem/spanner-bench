@@ -18,118 +18,119 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/spanner"
-	"github.com/rakyll/spanner-query-benchmark/internal/stats"
+	"github.com/rakyll/spannerbench/internal/stats"
 	"google.golang.org/api/iterator"
 	sppb "google.golang.org/genproto/googleapis/spanner/v1"
 )
 
 type benchmarks struct {
-	client  *spanner.Client
-	n       int
-	queries []Query
+	client     *spanner.Client
+	n          int
+	benchmarks []Benchmark
 }
 
 func (b *benchmarks) start() {
-	for _, q := range b.queries {
-		b.run(q)
+	for _, bench := range b.benchmarks {
+		b.run(bench)
 	}
 }
 
-func (b *benchmarks) run(q Query) {
-	fmt.Println(q.Name)
+func (b *benchmarks) run(bench Benchmark) {
+	fmt.Println(bench.Name)
 
-	var results []benchmarkResult
-	stmt := spanner.NewStatement(q.SQL)
-	for _, opt := range q.Optimizers {
-		results = append(results, b.queryN(opt, stmt))
+	var fn func() (benchmarkResult, error)
+	if bench.ReadOnly {
+		fn = b.makeReadOnly(bench)
+	} else {
+		fn = b.makeReadWrite(bench)
 	}
-	b.print(q, results...)
+	result := b.runN(bench, fn)
+
+	fmt.Println(result) // TODO(jbd): Allow other types of output.
 }
 
-func (b *benchmarks) queryN(v string, stmt spanner.Statement) benchmarkResult {
+func (b *benchmarks) makeReadOnly(bench Benchmark) func() (benchmarkResult, error) {
+	// TODO(jbd): Add staleness options.
+	stmts := parseSQL(bench.SQL)
+
+	return func() (benchmarkResult, error) {
+		ctx := context.Background()
+		start := time.Now()
+
+		tx := b.client.ReadOnlyTransaction()
+		defer tx.Close()
+
+		for _, stmt := range stmts {
+			it := tx.QueryWithOptions(ctx, stmt, spanner.QueryOptions{
+				Options: &sppb.ExecuteSqlRequest_QueryOptions{
+					OptimizerVersion: bench.Optimizer,
+				},
+			})
+
+			// TODO(jbd): Use server-side elapsed time, CPU time, etc.
+			// Should we loop over the results?
+			_, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return benchmarkResult{}, err
+			}
+		}
+
+		return benchmarkResult{
+			Elapsed: time.Now().Sub(start),
+		}, nil
+	}
+}
+
+func (b *benchmarks) makeReadWrite(bench Benchmark) func() (benchmarkResult, error) {
+	return func() (benchmarkResult, error) {
+		return benchmarkResult{}, nil
+	}
+}
+
+func (b *benchmarks) runN(bench Benchmark, f func() (benchmarkResult, error)) benchmarkResult {
 	var i, retries int
-	var rowsScanned, rowsReturned, cpuTime, queryPlanTime, elapsedTime []int64
+	var elapsed []int64
 
 	for {
 		if i == b.n {
 			break
 		}
 
-		result, err := b.query(v, stmt)
+		result, err := f()
 		retries++
+
 		if err != nil {
+			if retries > 2*b.n {
+				log.Fatalf("Query failed too many times: %v\n", err)
+			}
 			continue
 		}
-		if retries > 2*b.n {
-			log.Fatalf("Query failed too many times: %v\n", err)
-		}
-		rowsScanned = append(rowsScanned, result.RowsScanned)
-		rowsReturned = append(rowsReturned, result.RowsReturned)
-		cpuTime = append(cpuTime, int64(result.CPUTime))
-		queryPlanTime = append(queryPlanTime, int64(result.QueryPlanTime))
-		elapsedTime = append(elapsedTime, int64(result.ElapsedTime))
+
+		elapsed = append(elapsed, int64(result.Elapsed))
 		i++
 	}
+
 	return benchmarkResult{
-		Optimizer:     v,
-		RowsScanned:   stats.MedianInt64(rowsScanned...),
-		RowsReturned:  stats.MedianInt64(rowsReturned...),
-		CPUTime:       time.Duration(stats.MedianInt64(cpuTime...)),
-		QueryPlanTime: time.Duration(stats.MedianInt64(queryPlanTime...)),
-		ElapsedTime:   time.Duration(stats.MedianInt64(elapsedTime...)),
+		Elapsed: time.Duration(stats.MedianInt64(elapsed...)),
 	}
 }
 
-func (b *benchmarks) query(v string, stmt spanner.Statement) (benchmarkResult, error) {
-	mode := sppb.ExecuteSqlRequest_PROFILE
-	it := b.client.Single().QueryWithOptions(context.Background(), stmt, spanner.QueryOptions{
-		Mode: &mode,
-		Options: &sppb.ExecuteSqlRequest_QueryOptions{
-			OptimizerVersion: v,
-		},
-	})
-	defer it.Stop()
+func parseSQL(sql string) []spanner.Statement {
+	var statements []spanner.Statement
 
-	for {
-		_, err := it.Next()
-		if err == iterator.Done {
-			break
+	stmts := strings.Split(sql, ";")
+	for _, stmt := range stmts {
+		if stmt == "" {
+			continue
 		}
-		if err != nil {
-			return benchmarkResult{}, err
-		}
+		statements = append(statements, spanner.NewStatement(stmt))
 	}
-
-	var result benchmarkResult
-	for k, v := range it.QueryStats {
-		switch k {
-		case "rows_scanned":
-			result.RowsScanned = parseInt64(v.(string))
-		case "rows_returned":
-			result.RowsReturned = parseInt64(v.(string))
-		case "query_plan_creation_time":
-			result.QueryPlanTime = parseDuration(v.(string))
-		case "cpu_time":
-			result.CPUTime = parseDuration(v.(string))
-		case "elapsed_time":
-			result.ElapsedTime = parseDuration(v.(string))
-		}
-	}
-	result.Optimizer = v
-	return result, nil
-}
-
-func (b *benchmarks) print(q Query, r ...benchmarkResult) {
-	// Print the header.
-	fmt.Printf("   %10s %10s %10s %10s \n", "(scanned)", "(total)", "(cpu)", "(plan)")
-	for i, result := range r {
-		fmt.Println(result)
-		if i > 0 {
-			// TODO(jbd): Compare with the previous.
-			fmt.Println(result.Diff(r[i-1]))
-		}
-	}
+	return statements
 }

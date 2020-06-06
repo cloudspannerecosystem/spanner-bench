@@ -37,10 +37,6 @@ Benchmark3
 
 ## Notes
 
-* The tool runs the query planner and the query to
-  display query execution stats.
-* The "scanned rows" is the most useful metric, others might be
-  noisy and inconsistent.
 * The tool currently doesn't support timestamp-bound queries but it's in
   the roadmap.
 * The tool currently doesn't allow to use a specified index when
