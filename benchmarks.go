@@ -19,10 +19,9 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/spanner"
-	"github.com/rakyll/spannerbench/internal/stats"
+	"github.com/rakyll/spannerbench/internal/histogram"
 	"google.golang.org/api/iterator"
 	sppb "google.golang.org/genproto/googleapis/spanner/v1"
 )
@@ -48,9 +47,10 @@ func (b *benchmarks) run(bench Benchmark) {
 	} else {
 		fn = b.makeReadWrite(bench)
 	}
-	result := b.runN(fn)
+	elapsed, _, _ := b.runN(fn)
 
-	fmt.Println(result) // TODO(jbd): Allow other types of output.
+	histogram := histogram.NewHistogram(elapsed)
+	fmt.Println(histogram)
 }
 
 func (b *benchmarks) makeReadOnly(bench Benchmark) func() (benchmarkResult, error) {
@@ -116,9 +116,8 @@ func (b *benchmarks) makeReadWrite(bench Benchmark) func() (benchmarkResult, err
 	}
 }
 
-func (b *benchmarks) runN(f func() (benchmarkResult, error)) benchmarkResult {
+func (b *benchmarks) runN(f func() (benchmarkResult, error)) (elapsed, cpu, optimizer []int64) {
 	var i, retries int
-	var elapsed, cpu, optimizer []int64
 
 	for {
 		if i == b.n {
@@ -138,11 +137,7 @@ func (b *benchmarks) runN(f func() (benchmarkResult, error)) benchmarkResult {
 		optimizer = append(optimizer, int64(result.OptimizerElapsed))
 		i++
 	}
-	return benchmarkResult{
-		Elapsed:          time.Duration(stats.MedianInt64(elapsed...)),
-		CPUElapsed:       time.Duration(stats.MedianInt64(cpu...)),
-		OptimizerElapsed: time.Duration(stats.MedianInt64(optimizer...)),
-	}
+	return elapsed, cpu, optimizer
 }
 
 func parseSQL(sql string) []spanner.Statement {

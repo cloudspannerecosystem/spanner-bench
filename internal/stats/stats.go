@@ -24,17 +24,20 @@ func MedianInt64(x ...int64) int64 {
 	if count == 0 {
 		return 0 // TODO(jbd): NaN?
 	}
-
-	var copied []int64
-	copy(copied, x)
-	sort.Slice(copied, func(i, j int) bool {
-		return x[i] > x[j]
-	})
-
+	x = SortInt64s(x)
 	if count%2 == 0 {
 		return x[count/2-1]
 	}
 	return x[count/2]
+}
+
+func SortInt64s(x []int64) []int64 {
+	copied := make([]int64, len(x))
+	copy(copied, x)
+	sort.Slice(copied, func(i, j int) bool {
+		return copied[i] < copied[j]
+	})
+	return copied
 }
 
 func MedianFloat64(x ...float64) float64 {
@@ -43,7 +46,7 @@ func MedianFloat64(x ...float64) float64 {
 		return math.NaN()
 	}
 
-	var copied []float64
+	copied := make([]float64, len(x))
 	copy(copied, x)
 	sort.Float64s(copied)
 
