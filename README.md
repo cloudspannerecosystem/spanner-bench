@@ -1,8 +1,6 @@
 # spannerbench
 
-A Google Cloud Spanner query planner benchmarking tool.
-It also allows you to run the same benchmark against
-multiple versions of the query planner.
+A Google Cloud Spanner transaction benchmarking tool.
 
 See `examples/benchmark.yaml` for an example configuration.
 
@@ -15,30 +13,36 @@ See `examples/benchmark.yaml` for an example configuration.
 ## Usage
 
 ```
-$ spannerbench
-Benchmark1
-    (scanned)    (total)      (cpu)     (plan)
-1:        965  37.7455ms   2.7275ms    812.5µs    965/965
-2:        965   37.565ms    2.982ms    677.5µs    965/965
-Benchmark2
-    (scanned)    (total)      (cpu)     (plan)
-1:        965   35.991ms   1.5865ms    1.063ms    965/3
-2:        965   36.391ms     1.58ms    1.225ms    965/3
-Benchmark3
-    (scanned)    (total)      (cpu)     (plan)
-2:        100  36.3065ms   1.7225ms    1.221ms    100/100
+$ spannerbench -f examples/benhmark.yaml
+Query stream where likes > 100
+  Latency   : 7.99ms
+  CPU time  : 7.14ms
+  Optimizer : 2.22ms
+Latency histogram:
+  7.11ms    : ■■■■■■■■■■ (1)
+  7.694ms   : ■■■■■■■■■■■■■■■■■■■■ (2)
+  8.278ms   : ■■■■■■■■■■■■■■■■■■■■ (2)
+  8.862ms   : ■■■■■■■■■■■■■■■■■■■■ (2)
+  9.446ms   : ■■■■■■■■■■■■■■■■■■■■ (2)
+  10.03ms   : ■■■■■■■■■■ (1)
+
+Query stream where likes > 100 (read-only; optimizer=1)
+  Latency   : 36.5ms
+  CPU time  : 2.36ms
+  Optimizer : 880µs
+Latency histogram:
+  36.37ms   : ■■■■■■■ (1)
+  36.418ms  : ■■■■■■■ (1)
+  36.466ms  : ■■■■■■■■■■■■■ (2)
+  36.514ms  : ■■■■■■■ (1)
+  36.562ms  : ■■■■■■■■■■■■■ (2)
+  36.61ms   : ■■■■■■■■■■■■■■■■■■■■ (3)
 ```
-
-### Output explained...
-
-| planner version | total rows scanned | total execution time | total CPU time | planning time | rows scanned/rows returned |
-|-|-|-|-|-|-|
-| 1: | 965  | 38.187ms | 3.015ms | 798.5µs | 965/965 |
 
 ## Notes
 
-* The tool currently doesn't support timestamp-bound queries but it's in
-  the roadmap.
+* The tool currently doesn't support timestamp-bound
+  queries but it's in the roadmap.
 * The tool currently doesn't allow to use a specified index when
   querying. It will be enabled if requested by the users.
 
