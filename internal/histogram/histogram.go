@@ -29,7 +29,7 @@ func NewHistogram(dur []int64) *Histogram {
 	counts := make([]int, numBuckets+1)
 	dur = stats.SortInt64s(dur)
 
-	if len(dur) < 2 {
+	if len(dur) < 5 {
 		return nil
 	}
 
@@ -81,12 +81,18 @@ func (h *Histogram) String() string {
 		bucket := h.buckets[i]
 		var barLen int
 		if max > 0 {
-			barLen = (bucket.Count*40 + max/2) / max
+			barLen = (bucket.Count*20 + max/2) / max
 		}
-		dur := time.Duration(bucket.Mark)
-		label := fmt.Sprintf("%v (%v)", dur, bucket.Count)
+		if bucket.Count > 0 && barLen == 0 {
+			barLen = 1 // bar length should be at least one if there are items.
+		}
 
-		res.WriteString(fmt.Sprintf("%-15v : %v\n", label, strings.Repeat(barChar, barLen)))
+		dur := time.Duration(bucket.Mark)
+		res.WriteString(fmt.Sprintf("  %-10v: %v ", dur, strings.Repeat(barChar, barLen)))
+		if bucket.Count > 0 {
+			res.WriteString(fmt.Sprintf("(%v)", bucket.Count))
+		}
+		res.WriteRune('\n')
 	}
 	return res.String()
 }

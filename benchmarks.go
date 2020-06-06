@@ -19,9 +19,11 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/spanner"
 	"github.com/rakyll/spannerbench/internal/histogram"
+	"github.com/rakyll/spannerbench/internal/stats"
 	"google.golang.org/api/iterator"
 	sppb "google.golang.org/genproto/googleapis/spanner/v1"
 )
@@ -47,10 +49,15 @@ func (b *benchmarks) run(bench Benchmark) {
 	} else {
 		fn = b.makeReadWrite(bench)
 	}
-	elapsed, _, _ := b.runN(fn)
 
-	histogram := histogram.NewHistogram(elapsed)
-	fmt.Println(histogram)
+	elapsed, cpu, optimizer := b.runN(fn)
+	fmt.Printf("  %-10v: %v\n", "Latency", time.Duration(stats.MedianInt64(elapsed...)))
+	fmt.Printf("  %-10v: %v\n", "CPU time", time.Duration(stats.MedianInt64(cpu...)))
+	fmt.Printf("  %-10v: %v\n", "Optimizer", time.Duration(stats.MedianInt64(optimizer...)))
+	if histogram := histogram.NewHistogram(elapsed); histogram != nil {
+		fmt.Println("Latency histogram:")
+		fmt.Println(histogram)
+	}
 }
 
 func (b *benchmarks) makeReadOnly(bench Benchmark) func() (benchmarkResult, error) {

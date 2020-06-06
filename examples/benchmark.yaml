@@ -1,6 +1,9 @@
 database: "projects/computelabs/instances/hello/databases/db"
 benchmarks:
-    - name: "Benchmark where likes > 100"
+    - name: "Query stream where likes > 100"
+      sql: "SELECT * FROM tweets WHERE likes > 100;"
+
+    - name: "Query stream where likes > 100 (read-only; optimizer=1)"
       sql: "SELECT * FROM tweets WHERE likes > 100;"
       optimizer: "1"
       readonly: true
