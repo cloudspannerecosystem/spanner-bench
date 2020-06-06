@@ -56,66 +56,73 @@ func (b *benchmarks) run(bench Benchmark) {
 func (b *benchmarks) makeReadOnly(bench Benchmark) func() (benchmarkResult, error) {
 	// TODO(jbd): Add staleness options.
 	stmts := parseSQL(bench.SQL)
-
 	return func() (benchmarkResult, error) {
 		ctx := context.Background()
-		start := time.Now()
+		var result benchmarkResult
 
 		tx := b.client.ReadOnlyTransaction()
 		defer tx.Close()
 
+		mode := sppb.ExecuteSqlRequest_PROFILE
 		for _, stmt := range stmts {
 			it := tx.QueryWithOptions(ctx, stmt, spanner.QueryOptions{
+				Mode: &mode,
 				Options: &sppb.ExecuteSqlRequest_QueryOptions{
 					OptimizerVersion: bench.Optimizer,
 				},
 			})
-			// TODO(jbd): Use server-side elapsed time, CPU time, etc.
-			// Should we loop over the results?
-			_, err := it.Next()
-			if err != iterator.Done {
+			r, err := parseBenchmarkResult(it)
+			if err != nil {
 				return benchmarkResult{}, err
 			}
+			result.Elapsed += r.Elapsed
+			result.CPUElapsed += r.CPUElapsed
+			result.OptimizerElapsed += r.OptimizerElapsed
+			it.Stop()
 		}
-
-		return benchmarkResult{
-			Elapsed: time.Now().Sub(start),
-		}, nil
+		return result, nil
 	}
 }
 
 func (b *benchmarks) makeReadWrite(bench Benchmark) func() (benchmarkResult, error) {
 	ctx := context.Background()
-	start := time.Now()
 
 	stmts := parseSQL(bench.SQL)
-
 	return func() (benchmarkResult, error) {
+		var result benchmarkResult
+
+		mode := sppb.ExecuteSqlRequest_PROFILE
 		_, err := b.client.ReadWriteTransaction(ctx, func(ctx context.Context, tx *spanner.ReadWriteTransaction) error {
+			// TODO(jbd): Handle the errors.
 			for _, stmt := range stmts {
-				_ = tx.QueryWithOptions(ctx, stmt, spanner.QueryOptions{
+				it := tx.QueryWithOptions(ctx, stmt, spanner.QueryOptions{
+					Mode: &mode,
 					Options: &sppb.ExecuteSqlRequest_QueryOptions{
 						OptimizerVersion: bench.Optimizer,
 					},
 				})
+				r, err := parseBenchmarkResult(it)
+				if err != nil {
+					return err
+				}
+				result.Elapsed += r.Elapsed
+				result.CPUElapsed += r.CPUElapsed
+				result.OptimizerElapsed += r.OptimizerElapsed
+				it.Stop()
 			}
 			return nil
 		})
-		if err != nil {
-			return benchmarkResult{}, err
-		}
-		return benchmarkResult{
-			Elapsed: time.Now().Sub(start),
-		}, nil
+		return result, err
 	}
 }
 
 func (b *benchmarks) runN(f func() (benchmarkResult, error)) benchmarkResult {
 	var i, retries int
-	var elapsed []int64
+	var elapsed, cpu, optimizer []int64
 
 	for {
 		if i == b.n {
+			// TODO(jbd): Stop until result is stabilized.
 			break
 		}
 		result, err := f()
@@ -127,11 +134,14 @@ func (b *benchmarks) runN(f func() (benchmarkResult, error)) benchmarkResult {
 			continue
 		}
 		elapsed = append(elapsed, int64(result.Elapsed))
+		cpu = append(cpu, int64(result.CPUElapsed))
+		optimizer = append(optimizer, int64(result.OptimizerElapsed))
 		i++
 	}
-
 	return benchmarkResult{
-		Elapsed: time.Duration(stats.MedianInt64(elapsed...)),
+		Elapsed:          time.Duration(stats.MedianInt64(elapsed...)),
+		CPUElapsed:       time.Duration(stats.MedianInt64(cpu...)),
+		OptimizerElapsed: time.Duration(stats.MedianInt64(optimizer...)),
 	}
 }
 
@@ -146,4 +156,29 @@ func parseSQL(sql string) []spanner.Statement {
 		statements = append(statements, spanner.NewStatement(stmt))
 	}
 	return statements
+}
+
+func parseBenchmarkResult(it *spanner.RowIterator) (benchmarkResult, error) {
+	for { // Required to be able to read the stats.
+		_, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return benchmarkResult{}, err
+		}
+	}
+
+	var result benchmarkResult
+	for k, v := range it.QueryStats {
+		switch k {
+		case "query_plan_creation_time":
+			result.OptimizerElapsed = parseDuration(v.(string))
+		case "cpu_time":
+			result.CPUElapsed = parseDuration(v.(string))
+		case "elapsed_time":
+			result.Elapsed = parseDuration(v.(string))
+		}
+	}
+	return result, nil
 }

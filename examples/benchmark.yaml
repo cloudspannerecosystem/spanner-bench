@@ -1,6 +1,6 @@
-database: "projects/YOUR_PROJECT_NAME/instances/YOUR_SPANNER_INSTANCE/databases/YOUR_SPANNER_DB"
+database: "projects/computelabs/instances/hello/databases/db"
 benchmarks:
-    - name: "Benchmark1"
+    - name: "Benchmark where likes > 100"
       sql: "SELECT * FROM tweets WHERE likes > 100;"
       optimizer: "1"
       readonly: true

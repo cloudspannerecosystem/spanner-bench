@@ -36,11 +36,13 @@ func parseDuration(v string) time.Duration {
 }
 
 type benchmarkResult struct {
-	Elapsed time.Duration
+	Elapsed          time.Duration
+	CPUElapsed       time.Duration
+	OptimizerElapsed time.Duration
 }
 
 func (b benchmarkResult) String() string {
 	buf := &strings.Builder{}
-	fmt.Fprint(buf, b.Elapsed)
+	fmt.Fprintf(buf, "%v %v %v", b.Elapsed, b.CPUElapsed, b.OptimizerElapsed)
 	return buf.String()
 }
