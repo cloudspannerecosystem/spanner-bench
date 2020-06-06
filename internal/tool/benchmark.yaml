@@ -1,0 +1,11 @@
+database: "projects/computelabs/instances/hello/databases/db"
+benchmarks:
+    - name: "Count, insert and delete"
+      sql: "SELECT count(*) FROM tweets;
+            INSERT INTO tweets(id, likes) VALUES (-1, 5);
+            DELETE FROM tweets WHERE id = -1"
+
+    - name: "Query stream where likes > 100 (read-only; optimizer=1)"
+      sql: "SELECT * FROM tweets WHERE likes > 100;"
+      optimizer: "1"
+      readonly: true

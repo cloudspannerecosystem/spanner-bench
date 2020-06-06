@@ -1,50 +1,37 @@
 # spannerbench
 
-A Google Cloud Spanner query planner benchmarking tool.
-It also allows you to run the same benchmark against
-multiple versions of the query planner.
+A Google Cloud Spanner transaction benchmarking framework.
 
-See `examples/benchmark.yaml` for an example configuration.
-
-## Downloads
-
-* [Linux 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_linux_amd64)
-* [MacOS 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_darwin_amd64)
-* [Windows 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_windows_amd64)
+See `examples/helloworld` for an example.
 
 ## Usage
 
 ```
-$ spannerbench
-Benchmark1
-    (scanned)    (total)      (cpu)     (plan)
-1:        965  37.7455ms   2.7275ms    812.5µs    965/965
-2:        965   37.565ms    2.982ms    677.5µs    965/965
-Benchmark2
-    (scanned)    (total)      (cpu)     (plan)
-1:        965   35.991ms   1.5865ms    1.063ms    965/3
-2:        965   36.391ms     1.58ms    1.225ms    965/3
-Benchmark3
-    (scanned)    (total)      (cpu)     (plan)
-2:        100  36.3065ms   1.7225ms    1.221ms    100/100
+$ go run examples/bench/main.go
+BenchmarkReadOnly
+Latency histogram:
+  216ns     : ■ (1)
+  2.963µs   : ■■■■■■■■■■■■■■■■■■■■ (44)
+  5.71µs    : ■ (3)
+  8.457µs   : ■ (1)
+  11.204µs  :
+  13.951µs  : ■ (1)
+
+Benchmark
+Latency histogram:
+  82.870914ms: ■ (1)
+  290.643631ms: ■■■■■■■■■■■■■■■■■■■■ (46)
+  498.416348ms: ■ (1)
+  706.189065ms: ■ (1)
+  913.961782ms:
+  1.121734499s: ■ (1)
 ```
-
-### Output explained...
-
-| planner version | total rows scanned | total execution time | total CPU time | planning time | rows scanned/rows returned |
-|-|-|-|-|-|-|
-| 1: | 965  | 38.187ms | 3.015ms | 798.5µs | 965/965 |
 
 ## Notes
 
-* The tool runs the query planner and the query to
-  display query execution stats.
-* The "scanned rows" is the most useful metric, others might be
-  noisy and inconsistent.
-* The tool currently doesn't support timestamp-bound queries but it's in
-  the roadmap.
-* The tool currently doesn't allow to use a specified index when
-  querying. It will be enabled if requested by the users.
+* The framework only reports the client-perceived latency at the moment.
+* The benchmarks are run sequentially, concurrency support is in the
+  roadmap but is not implemented yet.
 
 ## Disclaimer
 
