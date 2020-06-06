@@ -41,6 +41,6 @@ type benchmarkResult struct {
 
 func (b benchmarkResult) String() string {
 	buf := &strings.Builder{}
-	fmt.Fprintf(buf, "%10s ", b.Elapsed)
+	fmt.Fprint(buf, b.Elapsed)
 	return buf.String()
 }

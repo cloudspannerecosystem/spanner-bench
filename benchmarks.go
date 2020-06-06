@@ -48,7 +48,7 @@ func (b *benchmarks) run(bench Benchmark) {
 	} else {
 		fn = b.makeReadWrite(bench)
 	}
-	result := b.runN(bench, fn)
+	result := b.runN(fn)
 
 	fmt.Println(result) // TODO(jbd): Allow other types of output.
 }
@@ -70,14 +70,10 @@ func (b *benchmarks) makeReadOnly(bench Benchmark) func() (benchmarkResult, erro
 					OptimizerVersion: bench.Optimizer,
 				},
 			})
-
 			// TODO(jbd): Use server-side elapsed time, CPU time, etc.
 			// Should we loop over the results?
 			_, err := it.Next()
-			if err == iterator.Done {
-				break
-			}
-			if err != nil {
+			if err != iterator.Done {
 				return benchmarkResult{}, err
 			}
 		}
@@ -89,12 +85,32 @@ func (b *benchmarks) makeReadOnly(bench Benchmark) func() (benchmarkResult, erro
 }
 
 func (b *benchmarks) makeReadWrite(bench Benchmark) func() (benchmarkResult, error) {
+	ctx := context.Background()
+	start := time.Now()
+
+	stmts := parseSQL(bench.SQL)
+
 	return func() (benchmarkResult, error) {
-		return benchmarkResult{}, nil
+		_, err := b.client.ReadWriteTransaction(ctx, func(ctx context.Context, tx *spanner.ReadWriteTransaction) error {
+			for _, stmt := range stmts {
+				_ = tx.QueryWithOptions(ctx, stmt, spanner.QueryOptions{
+					Options: &sppb.ExecuteSqlRequest_QueryOptions{
+						OptimizerVersion: bench.Optimizer,
+					},
+				})
+			}
+			return nil
+		})
+		if err != nil {
+			return benchmarkResult{}, err
+		}
+		return benchmarkResult{
+			Elapsed: time.Now().Sub(start),
+		}, nil
 	}
 }
 
-func (b *benchmarks) runN(bench Benchmark, f func() (benchmarkResult, error)) benchmarkResult {
+func (b *benchmarks) runN(f func() (benchmarkResult, error)) benchmarkResult {
 	var i, retries int
 	var elapsed []int64
 
@@ -102,17 +118,14 @@ func (b *benchmarks) runN(bench Benchmark, f func() (benchmarkResult, error)) be
 		if i == b.n {
 			break
 		}
-
 		result, err := f()
 		retries++
-
 		if err != nil {
 			if retries > 2*b.n {
 				log.Fatalf("Query failed too many times: %v\n", err)
 			}
 			continue
 		}
-
 		elapsed = append(elapsed, int64(result.Elapsed))
 		i++
 	}
