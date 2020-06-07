@@ -32,7 +32,9 @@ Latency histogram:
 * The framework only reports the client-perceived latency at the moment.
 * The benchmarks are run sequentially, concurrency support is in the
   roadmap but is not implemented yet.
-* Session management related improvements are in the roadmap.
+* Note timestamp bound support is work in progress.
+* Framework can warm-up the sessions before starting to benchmark.
+  This improvement is in the roadmap.
 
 ## Disclaimer
 
