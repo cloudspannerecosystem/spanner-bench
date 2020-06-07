@@ -27,6 +27,12 @@ Latency histogram:
   1.121734499s: ■ (1)
 ```
 
+## Notes
+
+* The framework only reports the client-perceived latency at the moment.
+* The benchmarks are run sequentially, concurrency support is in the
+  roadmap but is not implemented yet.
+
 ## Disclaimer
 
 This is not an official Google product.
