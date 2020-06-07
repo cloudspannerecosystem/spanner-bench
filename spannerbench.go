@@ -98,12 +98,13 @@ func (b *B) startAndRunReadOnly(fn func(tx *spanner.ReadOnlyTransaction) error) 
 		b.elapsed = append(b.elapsed, int64(dur))
 	}()
 
+	// TODO(jbd): Add strong read as an option.
 	tx := b.client.ReadOnlyTransaction()
-	defer tx.Close()
-
 	if b.staleness != nil {
 		tx = tx.WithTimestampBound(*b.staleness)
 	}
+	defer tx.Close()
+
 	return fn(tx)
 }
 
@@ -169,12 +170,13 @@ func (b *B) print() {
 // database as db.
 func Benchmark(db string, fn ...func(b *B)) {
 	ctx := context.Background()
-	client, err := spanner.NewClient(ctx, db, option.WithUserAgent(userAgent))
-	if err != nil {
-		log.Fatalf("Cannot create Spanner client: %v", err)
-	}
-
 	for _, f := range fn {
+		// Don't reshare the same client between benchmarks.
+		client, err := spanner.NewClient(ctx, db, option.WithUserAgent(userAgent))
+		if err != nil {
+			log.Fatalf("Cannot create Spanner client: %v", err)
+		}
+
 		name := funcName(f)
 		fmt.Println(name)
 		f(&B{
