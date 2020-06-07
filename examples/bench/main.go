@@ -10,20 +10,21 @@ import (
 func main() {
 	spannerbench.Benchmark(
 		"projects/computelabs/instances/hello/databases/db",
-		BenchmarkQuery,
+		BenchmarkReadOnly,
+		Benchmark,
 	)
 }
 
-func BenchmarkLikesQuery(b *spannerbench.B) {
-	b.N(100) // Runs for 100 times.
+func BenchmarkReadOnly(b *spannerbench.B) {
+	b.N(50) // Runs for 100 times.
 	b.MaxStaleness(500 * time.Millisecond)
 	b.RunReadOnly(func(tx *spanner.ReadOnlyTransaction) error {
 		return nil
 	})
 }
 
-func BenchmarkQuery(b *spannerbench.B) {
-	b.N(5) // Runs for 100 times.
+func Benchmark(b *spannerbench.B) {
+	b.N(50) // Runs for 100 times.
 	b.Run(func(tx *spanner.ReadWriteTransaction) error {
 		return nil
 	})

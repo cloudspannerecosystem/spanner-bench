@@ -186,7 +186,10 @@ func Benchmark(db string, fn ...func(b *B)) {
 func funcName(fn func(b *B)) string {
 	fullname := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
 	name := strings.Split(fullname, ".")
-	return name[1]
+	if len(name) == 2 {
+		return name[1]
+	}
+	return fullname // Anonymous functions.
 }
 
 const (

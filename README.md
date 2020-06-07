@@ -1,19 +1,13 @@
 # spannerbench
 
-A Google Cloud Spanner transaction benchmarking tool.
+A Google Cloud Spanner transaction benchmarking framework.
 
-See `examples/benchmark.yaml` for an example configuration.
-
-## Downloads
-
-* [Linux 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_linux_amd64)
-* [MacOS 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_darwin_amd64)
-* [Windows 64-bit](https://github.com/rakyll/spannerbench/raw/master/bin/spannerbench_windows_amd64)
+See `examples/bench` for an example.
 
 ## Usage
 
 ```
-$ spannerbench -f examples/benhmark.yaml
+$ go run examples/bench/main.go
 Query stream where likes > 100
   Latency   : 7.99ms
   CPU time  : 7.14ms
