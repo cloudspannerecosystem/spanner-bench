@@ -2,7 +2,7 @@
 
 A Google Cloud Spanner transaction benchmarking framework.
 
-See `examples/bench` for an example.
+See `examples/helloworld` for an example.
 
 ## Usage
 
