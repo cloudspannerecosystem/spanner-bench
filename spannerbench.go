@@ -181,7 +181,7 @@ func Benchmark(db string, fn ...func(b *B)) {
 		fmt.Println(name)
 		f(&B{
 			client: client,
-		}) // TODO(jbd): Fill the B.
+		})
 	}
 }
 

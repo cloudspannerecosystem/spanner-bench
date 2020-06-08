@@ -19,8 +19,6 @@ type Config struct {
 	Benchmarks []Benchmark `yaml:"benchmarks"`
 }
 
-// TODO(jbd): Add query stats.
-
 type Benchmark struct {
 	Name      string `yaml:"name"`
 	SQL       string `yaml:"sql"`

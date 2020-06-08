@@ -61,7 +61,6 @@ func (b *benchmarks) run(bench Benchmark) {
 }
 
 func (b *benchmarks) makeReadOnly(bench Benchmark) func() (benchmarkResult, error) {
-	// TODO(jbd): Add staleness options.
 	stmts := parseSQL(bench.SQL)
 	return func() (benchmarkResult, error) {
 		ctx := context.Background()
@@ -100,7 +99,6 @@ func (b *benchmarks) makeReadWrite(bench Benchmark) func() (benchmarkResult, err
 
 		mode := sppb.ExecuteSqlRequest_PROFILE
 		_, err := b.client.ReadWriteTransaction(ctx, func(ctx context.Context, tx *spanner.ReadWriteTransaction) error {
-			// TODO(jbd): Handle the errors.
 			for _, stmt := range stmts {
 				it := tx.QueryWithOptions(ctx, stmt, spanner.QueryOptions{
 					Mode: &mode,

@@ -87,6 +87,7 @@ func (h *Histogram) String() string {
 		}
 
 		dur := time.Duration(bucket.Mark)
+		// TODO(jbd): Print out the range, not just the current mark.
 		res.WriteString(fmt.Sprintf("  %-12v: %v ", dur, strings.Repeat(barChar, barLen)))
 		if bucket.Count > 0 {
 			res.WriteString(fmt.Sprintf("(%v)", bucket.Count))

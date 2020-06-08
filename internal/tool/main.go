@@ -31,8 +31,6 @@ const userAgent = "spannerbench/0.1"
 var (
 	config string
 	n      int // number of iterations for each
-	// TODO(jbd): Allow concurrent runs.
-	// Configure session management based on concurrency.
 )
 
 func main() {
