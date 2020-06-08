@@ -15,10 +15,11 @@
 package main
 
 import (
-	"time"
+	"context"
 
 	"cloud.google.com/go/spanner"
 	"github.com/rakyll/spannerbench"
+	"google.golang.org/api/iterator"
 )
 
 func main() {
@@ -31,8 +32,18 @@ func main() {
 
 func BenchmarkReadOnly(b *spannerbench.B) {
 	b.N(50) // Runs for 100 times.
-	b.MaxStaleness(500 * time.Millisecond)
 	b.RunReadOnly(func(tx *spanner.ReadOnlyTransaction) error {
+		ctx := context.Background()
+		it := tx.Query(ctx, spanner.NewStatement("SELECT * FROM tweets LIMIT 10"))
+		defer it.Stop()
+
+		for {
+			_, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			return err
+		}
 		return nil
 	})
 }
@@ -40,6 +51,17 @@ func BenchmarkReadOnly(b *spannerbench.B) {
 func Benchmark(b *spannerbench.B) {
 	b.N(50) // Runs for 100 times.
 	b.Run(func(tx *spanner.ReadWriteTransaction) error {
+		ctx := context.Background()
+		it := tx.Query(ctx, spanner.NewStatement("SELECT * FROM tweets LIMIT 10"))
+		defer it.Stop()
+
+		for {
+			_, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			return err
+		}
 		return nil
 	})
 }
