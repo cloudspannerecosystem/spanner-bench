@@ -1,4 +1,4 @@
-# spannerbench
+![spannerbench logo](https://i.imgur.com/x6Z8yEd.png)
 
 A Google Cloud Spanner transaction benchmarking framework.
 
