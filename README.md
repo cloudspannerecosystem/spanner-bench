@@ -2,6 +2,9 @@
 
 A Google Cloud Spanner transaction benchmarking framework.
 
+[![CircleCI](https://circleci.com/gh/cloudspannerecosystem/spanner-bench.svg?style=svg)](https://circleci.com/gh/cloudspannerecosystem/spanner-bench)
+
+
 See `examples/helloworld` for an example.
 
 ## Usage
