@@ -22,8 +22,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/spanner"
-	"github.com/rakyll/spannerbench/internal/histogram"
-	"github.com/rakyll/spannerbench/internal/stats"
+	"github.com/cloudspannerecosystem/spanner-bench/internal/histogram"
+	"github.com/cloudspannerecosystem/spanner-bench/internal/stats"
 	"google.golang.org/api/iterator"
 	sppb "google.golang.org/genproto/googleapis/spanner/v1"
 )

@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rakyll/spannerbench/internal/stats"
+	"github.com/cloudspannerecosystem/spanner-bench/internal/stats"
 )
 
 const barChar = "■"

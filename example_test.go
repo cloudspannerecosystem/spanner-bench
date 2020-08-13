@@ -18,12 +18,12 @@ import (
 	"time"
 
 	"cloud.google.com/go/spanner"
-	"github.com/rakyll/spannerbench"
+	spannerbench "github.com/cloudspannerecosystem/spanner-bench"
 )
 
 func Example() {
 	// import "cloud.google.com/go/spanner"
-	// import "github.com/rakyll/spannerbench"
+	// import "github.com/cloudspannerecosystem/spanner-bench"
 
 	benchmarkReadOnly := func(b *spannerbench.B) {
 		b.N(100) // Runs for 100 times.

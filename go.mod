@@ -1,10 +1,10 @@
-module github.com/rakyll/spannerbench
+module github.com/cloudspannerecosystem/spanner-bench
 
 go 1.14
 
 require (
-	cloud.google.com/go/spanner v1.6.0
-	google.golang.org/api v0.26.0
-	google.golang.org/genproto v0.0.0-20200605102947-12044bf5ea91
+	cloud.google.com/go/spanner v1.8.0
+	google.golang.org/api v0.30.0
+	google.golang.org/genproto v0.0.0-20200813001606-1ccf2a5ae4fd
 	gopkg.in/yaml.v2 v2.3.0
 )

@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/spanner"
-	"github.com/rakyll/spannerbench/internal/histogram"
+	"github.com/cloudspannerecosystem/spanner-bench/internal/histogram"
 	"google.golang.org/api/option"
 )
 

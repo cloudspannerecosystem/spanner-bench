@@ -18,7 +18,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/spanner"
-	"github.com/rakyll/spannerbench"
+	spannerbench "github.com/cloudspannerecosystem/spanner-bench"
 	"google.golang.org/api/iterator"
 )
 
