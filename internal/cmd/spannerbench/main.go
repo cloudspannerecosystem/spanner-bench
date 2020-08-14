@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,7 +12,9 @@ import (
 	"time"
 
 	"cloud.google.com/go/spanner"
+	"github.com/cloudspannerecosystem/spanner-bench/internal/stats"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 )
 
 var (
@@ -40,8 +43,11 @@ func main() {
 	ctx := context.Background()
 	db := "projects/" + project + "/instances/" + instance + "/databases/" + database
 	client, err := spanner.NewClientWithConfig(ctx, db, spanner.ClientConfig{
-		NumChannels: concurrency,
-	})
+		SessionPoolConfig: spanner.SessionPoolConfig{
+			MinOpened: uint64(concurrency),
+			MaxOpened: uint64(concurrency),
+		},
+	}, option.WithGRPCConnectionPool(concurrency))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,19 +58,24 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
+	var durs []time.Duration
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			durs, err := benchmarkN(ctx, client, dml)
+			d, err := benchmarkN(ctx, client, dml)
 			if err != nil {
 				log.Println(err) // TODO(jbd): Add more context.
 			} else {
-				log.Println(durs)
+				durs = append(durs, d...)
 			}
 		}()
 	}
 	wg.Wait()
+
+	// Print results...
+	median := stats.MedianDuration(durs...)
+	fmt.Println(median)
 }
 
 func benchmarkN(ctx context.Context, client *spanner.Client, statements []spanner.Statement) ([]time.Duration, error) {

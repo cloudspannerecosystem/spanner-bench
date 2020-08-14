@@ -17,6 +17,7 @@ package stats
 import (
 	"math"
 	"sort"
+	"time"
 )
 
 func MedianInt64(x ...int64) int64 {
@@ -61,3 +62,25 @@ type Int64Slice []int64
 func (p Int64Slice) Len() int           { return len(p) }
 func (p Int64Slice) Less(i, j int) bool { return p[i] < p[j] }
 func (p Int64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func MedianDuration(x ...time.Duration) time.Duration {
+	count := len(x)
+	if count == 0 {
+		return time.Duration(-1)
+	}
+
+	copied := make([]time.Duration, len(x))
+	copy(copied, x)
+	sort.Sort(DurationSlice(copied))
+
+	if count%2 == 0 {
+		return x[count/2-1]
+	}
+	return x[count/2]
+}
+
+type DurationSlice []time.Duration
+
+func (p DurationSlice) Len() int           { return len(p) }
+func (p DurationSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p DurationSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
