@@ -1,0 +1,1 @@
+SELECT * FROM tweets WHERE likes > 400;
